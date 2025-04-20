@@ -1,0 +1,3 @@
+@echo off
+echo Starting FairTest Platform...
+npm run dev

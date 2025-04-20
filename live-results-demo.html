@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FairTest - Live Results Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+        .stats-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">FairTest - Live Exam Results</h1>
+        
+        <div class="alert alert-info d-flex justify-content-between align-items-center">
+            <span id="last-updated">Last updated: Never</span>
+            <div>
+                <span class="me-2">Auto-refresh: </span>
+                <button class="btn btn-sm btn-outline-primary refresh-interval" data-seconds="5">5s</button>
+                <button class="btn btn-sm btn-primary refresh-interval" data-seconds="10">10s</button>
+                <button class="btn btn-sm btn-outline-primary refresh-interval" data-seconds="30">30s</button>
+                <button class="btn btn-sm btn-success ms-2" id="refresh-now">Refresh Now</button>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card h-100 bg-light">
+                    <div class="card-body text-center">
+                        <h3 id="total-submissions">0</h3>
+                        <p class="mb-0">Total Submissions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card h-100 bg-light">
+                    <div class="card-body text-center">
+                        <h3 id="graded-submissions">0</h3>
+                        <p class="mb-0">Graded Submissions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card h-100 bg-light">
+                    <div class="card-body text-center">
+                        <h3 id="average-score">0.0</h3>
+                        <p class="mb-0">Average Score</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card h-100 bg-light">
+                    <div class="card-body text-center">
+                        <h3 id="highest-score">0</h3>
+                        <p class="mb-0">Highest Score</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4>Grading Progress</h4>
+                <div class="progress" style="height: 25px;">
+                    <div id="progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>Submissions</h3>
+            </div>
+            <div class="card-body">
+                <div id="no-results" class="alert alert-warning">No submissions yet</div>
+                <table id="results-table" class="table table-striped table-bordered table-hover" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Submitted At</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between my-4">
+            <a href="#" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <button class="btn btn-primary btn-lg refresh-btn" id="floating-refresh">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+
+    <script>
+        // Sample data for demonstration
+        const sampleData = {
+            examId: "exam123",
+            examTitle: "Mathematics Final Exam",
+            statistics: {
+                totalSubmissions: 15,
+                gradedSubmissions: 10,
+                averageScore: 75.5,
+                highestScore: 95
+            },
+            results: [
+                {
+                    id: "result1",
+                    studentName: "John Doe",
+                    studentEmail: "john@example.com",
+                    submittedAt: "2023-06-15T10:30:00Z",
+                    score: 85,
+                    maxScore: 100,
+                    verificationStatus: true
+                },
+                {
+                    id: "result2",
+                    studentName: "Jane Smith",
+                    studentEmail: "jane@example.com",
+                    submittedAt: "2023-06-15T10:45:00Z",
+                    score: 92,
+                    maxScore: 100,
+                    verificationStatus: true
+                },
+                {
+                    id: "result3",
+                    studentName: "Bob Johnson",
+                    studentEmail: "bob@example.com",
+                    submittedAt: "2023-06-15T11:00:00Z",
+                    score: 78,
+                    maxScore: 100,
+                    verificationStatus: true
+                },
+                {
+                    id: "result4",
+                    studentName: "Alice Brown",
+                    studentEmail: "alice@example.com",
+                    submittedAt: "2023-06-15T11:15:00Z",
+                    score: 95,
+                    maxScore: 100,
+                    verificationStatus: true
+                },
+                {
+                    id: "result5",
+                    studentName: "Charlie Wilson",
+                    studentEmail: "charlie@example.com",
+                    submittedAt: "2023-06-15T11:30:00Z",
+                    score: undefined,
+                    maxScore: 100,
+                    verificationStatus: false
+                }
+            ]
+        };
+
+        // Variables for refresh functionality
+        let refreshInterval = 10; // seconds
+        let refreshTimer;
+
+        // Function to update the UI with data
+        function updateUI(data) {
+            // Update statistics
+            document.getElementById('total-submissions').textContent = data.statistics.totalSubmissions;
+            document.getElementById('graded-submissions').textContent = data.statistics.gradedSubmissions;
+            document.getElementById('average-score').textContent = data.statistics.averageScore.toFixed(1);
+            document.getElementById('highest-score').textContent = data.statistics.highestScore;
+            
+            // Update progress bar
+            const progressPercentage = data.statistics.totalSubmissions > 0 
+                ? Math.round((data.statistics.gradedSubmissions / data.statistics.totalSubmissions) * 100) 
+                : 0;
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = `${progressPercentage}%`;
+            progressBar.textContent = `${data.statistics.gradedSubmissions}/${data.statistics.totalSubmissions} (${progressPercentage}%)`;
+            progressBar.setAttribute('aria-valuenow', progressPercentage);
+            
+            // Update results table
+            const resultsBody = document.getElementById('results-body');
+            resultsBody.innerHTML = '';
+            
+            if (data.results.length > 0) {
+                document.getElementById('no-results').style.display = 'none';
+                document.getElementById('results-table').style.display = 'table';
+                
+                data.results.forEach(result => {
+                    const row = document.createElement('tr');
+                    
+                    // Student name
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = result.studentName;
+                    row.appendChild(nameCell);
+                    
+                    // Submitted at
+                    const timeCell = document.createElement('td');
+                    timeCell.textContent = new Date(result.submittedAt).toLocaleString();
+                    row.appendChild(timeCell);
+                    
+                    // Score
+                    const scoreCell = document.createElement('td');
+                    if (result.score !== undefined) {
+                        const percentage = Math.round((result.score / result.maxScore) * 100);
+                        scoreCell.textContent = `${result.score}/${result.maxScore} (${percentage}%)`;
+                    } else {
+                        scoreCell.textContent = 'Not graded yet';
+                    }
+                    row.appendChild(scoreCell);
+                    
+                    // Status
+                    const statusCell = document.createElement('td');
+                    const badge = document.createElement('span');
+                    badge.className = `badge ${result.verificationStatus ? 'bg-success' : 'bg-warning'}`;
+                    badge.textContent = result.verificationStatus ? 'Verified' : 'Pending Verification';
+                    statusCell.appendChild(badge);
+                    row.appendChild(statusCell);
+                    
+                    resultsBody.appendChild(row);
+                });
+            } else {
+                document.getElementById('no-results').style.display = 'block';
+                document.getElementById('results-table').style.display = 'none';
+            }
+            
+            // Update last updated time
+            document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+
+        // Function to fetch data (in a real app, this would call the API)
+        function fetchData() {
+            // In a real app, this would be an API call
+            // For demo purposes, we'll use the sample data and add some randomness
+            
+            // Create a copy of the sample data
+            const data = JSON.parse(JSON.stringify(sampleData));
+            
+            // Add some randomness to the statistics
+            data.statistics.totalSubmissions += Math.floor(Math.random() * 3);
+            data.statistics.gradedSubmissions = Math.min(
+                data.statistics.totalSubmissions,
+                data.statistics.gradedSubmissions + Math.floor(Math.random() * 2)
+            );
+            data.statistics.averageScore = Math.min(100, data.statistics.averageScore + (Math.random() * 2 - 1));
+            data.statistics.highestScore = Math.min(100, data.statistics.highestScore + (Math.random() > 0.8 ? 1 : 0));
+            
+            // Add a new result occasionally
+            if (Math.random() > 0.7) {
+                const newResult = {
+                    id: `result${data.results.length + 1}`,
+                    studentName: `Student ${data.results.length + 1}`,
+                    studentEmail: `student${data.results.length + 1}@example.com`,
+                    submittedAt: new Date().toISOString(),
+                    score: Math.random() > 0.3 ? Math.floor(Math.random() * 30) + 70 : undefined,
+                    maxScore: 100,
+                    verificationStatus: Math.random() > 0.3
+                };
+                data.results.unshift(newResult);
+            }
+            
+            // Update UI with the new data
+            updateUI(data);
+        }
+
+        // Function to start the refresh timer
+        function startRefreshTimer() {
+            clearInterval(refreshTimer);
+            refreshTimer = setInterval(fetchData, refreshInterval * 1000);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial data fetch
+            fetchData();
+            
+            // Start refresh timer
+            startRefreshTimer();
+            
+            // Refresh interval buttons
+            document.querySelectorAll('.refresh-interval').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Update active button
+                    document.querySelectorAll('.refresh-interval').forEach(btn => {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    });
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-primary');
+                    
+                    // Update refresh interval
+                    refreshInterval = parseInt(this.getAttribute('data-seconds'));
+                    startRefreshTimer();
+                });
+            });
+            
+            // Refresh now buttons
+            document.getElementById('refresh-now').addEventListener('click', fetchData);
+            document.getElementById('floating-refresh').addEventListener('click', fetchData);
+        });
+    </script>
+</body>
+</html>
