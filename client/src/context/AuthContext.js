@@ -1,6 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
+// Ensure axios is using the correct base URL
+axios.defaults.baseURL = 'http://localhost:5001';
+
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
@@ -14,13 +17,13 @@ export const AuthProvider = ({ children }) => {
     // Check if user is already logged in
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    
+
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
       // Set default auth header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
-    
+
     setLoading(false);
   }, []);
 
@@ -28,22 +31,22 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const { data } = await axios.post('/api/auth/register', {
         name,
         email,
         password,
         role
       });
-      
+
       // Save user data and token
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
       localStorage.setItem('secretKey', data.secretKey); // Important for digital signatures
-      
+
       // Set default auth header
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      
+
       setUser(data.user);
       setLoading(false);
       return data;
@@ -62,19 +65,19 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const { data } = await axios.post('/api/auth/login', {
         email,
         password
       });
-      
+
       // Save user data and token
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
-      
+
       // Set default auth header
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      
+
       setUser(data.user);
       setLoading(false);
       return data;

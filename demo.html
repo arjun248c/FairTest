@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FairTest Security Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .feature {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        pre {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FairTest Security Demo</h1>
+        <p>FairTest is a comprehensive secure exam platform that addresses cheating at all stages of the examination process using cryptographic techniques.</p>
+
+        <div class="feature">
+            <h2>1. Pre-Exam Security (Paper Leak Prevention)</h2>
+            <p>AES-256-CBC encryption prevents unauthorized access to exam content before the exam starts.</p>
+            <pre><code>// Encryption
+const algorithm = 'aes-256-cbc';
+const cipher = crypto.createCipheriv(algorithm, key, iv);
+let encrypted = cipher.update(text, 'utf8', 'hex');
+encrypted += cipher.final('hex');
+
+// Decryption
+const decipher = crypto.createDecipheriv(algorithm, key, iv);
+let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+decrypted += decipher.final('utf8');</code></pre>
+            <p>Example output:</p>
+            <pre><code>Problem statement: 126141bef5f1d0784b7b65646a4f52d8
+Option 1: 020a1e98d68802bfe7e260fe3b4b248e
+Option 2: a4bc66402390064674e42302860b250b
+Option 3: 7d66083452c6a1fa9ec4b465f396b965
+Option 4: 8ff58985da29fdf79ffbd14f7dfa6829</code></pre>
+        </div>
+
+        <div class="feature">
+            <h2>2. During-Exam Security (Access Control)</h2>
+            <p>Shamir's Secret Sharing algorithm requires multiple authorized parties to collaborate to decrypt exam content.</p>
+            <pre><code>// Split a secret into shares
+const shares = sss.split(secretBuffer, { shares: 3, threshold: 2 });
+const sharesHex = shares.map(share => share.toString('hex'));
+
+// Combine shares to recover the secret
+const sharesBuffers = sharesHex.map(share => Buffer.from(share, 'hex'));
+const recovered = sss.combine(sharesBuffers);</code></pre>
+            <p>Example output:</p>
+            <pre><code>[
+  '0801480d1e69ba91078453305c8a653cfe7a893c9aeafb631f18a789b36374654709',
+  '0802901a3cd169b40ebaa6ddb869cacae1450fc32955eb563ebb53997b63e8788edd',
+  '0803d81722b9d35c095bf586e4c3af981f508696b3cb104521daf462c8639c73c991'
+]
+Encryption key</code></pre>
+        </div>
+
+        <div class="feature">
+            <h2>3. Post-Exam Security (Result Verification)</h2>
+            <p>Digital signatures using TweetNaCl verify the authenticity of exam results.</p>
+            <pre><code>// Generate a keypair
+const keypair = nacl.sign.keyPair();
+const publicKey = encodeBase64(keypair.publicKey);
+const secretKey = encodeBase64(keypair.secretKey);
+
+// Sign a message
+const messageBytes = decodeUTF8(JSON.stringify(message));
+const signature = nacl.sign.detached(messageBytes, decodeBase64(secretKey));
+
+// Verify a signature
+const isValid = nacl.sign.detached.verify(
+  messageBytes,
+  decodeBase64(signature),
+  decodeBase64(publicKey)
+);</code></pre>
+            <p>Example output:</p>
+            <pre><code>Uint8Array(64) [
+    7,  52, 140,  21,  68, 205, 243,  95, 255,   9, 194,
+   75,  53,  27,  60, 115,  57,  19,  16, 147, 211, 246,
+  229,  96, 188, 216, 188, 228,  98, 173, 135, 181,  65,
+  154, 127, 150,  27,  90, 170, 160, 218,  89, 209, 239,
+  118, 160,   1, 234, 248, 202, 162,  86, 231, 150, 142,
+   34, 136, 215, 187, 175, 230, 162,   6,   8
+]
+true</code></pre>
+        </div>
+
+        <h2>Live Results Feature</h2>
+        <p>FairTest includes a real-time results dashboard that provides transparency and immediate feedback:</p>
+        <ul>
+            <li>Real-time statistics (total submissions, graded submissions, average score, highest score)</li>
+            <li>Grading progress visualization</li>
+            <li>Detailed results table with verification status</li>
+            <li>Configurable auto-refresh intervals</li>
+        </ul>
+
+        <h2>GitHub Repository</h2>
+        <p>The FairTest project is available on GitHub:</p>
+        <a href="https://github.com/arjun248c/FairTest" class="btn" target="_blank">View on GitHub</a>
+    </div>
+</body>
+</html>

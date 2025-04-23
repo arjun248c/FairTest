@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Set base URL for API requests
-axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = 'http://localhost:5001';
 
 // Exams API
 export const examAPI = {
